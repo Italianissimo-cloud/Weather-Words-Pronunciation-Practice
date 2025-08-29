@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Italianissimo — Weather Words & Pronunciation Quiz (A1–A2)</title>
+  <meta name="description" content="Interactive Italian quiz for English speakers based on the Italianissimo YouTube lesson about weather vocabulary and pronunciation practice." />
+  <style>
+    :root{
+      --bg:#0f172a; --card:#111827; --ink:#e5e7eb; --muted:#9ca3af;
+      --accent:#22d3ee; --accent2:#a78bfa; --good:#34d399; --bad:#f87171;
+    }
+    * { box-sizing: border-box; }
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 800px at 10% 10%, #0b1220 0%, var(--bg) 45%),
+                  radial-gradient(900px 600px at 90% 0%, #1a1030 0%, var(--bg) 55%),
+                  var(--bg);
+      color:var(--ink); line-height:1.6;
+    }
+    header{ padding:clamp(20px,5vw,48px) 20px 12px; text-align:center; }
+    h1{ margin:0 0 8px 0; font-size:clamp(1.6rem,3.5vw,2.4rem); letter-spacing:.3px; }
+    .sub{ color:var(--muted); margin:0 auto; max-width:900px; }
+    .wrap{ max-width:980px; margin:20px auto 80px; padding:0 16px 32px; }
+    .card{ background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));
+            border:1px solid rgba(255,255,255,.08); border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,.35); overflow:clip; }
+    .media{ aspect-ratio:16/9; background:#000; position:relative; }
+    .media iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+    .note{ padding:14px 16px; background:rgba(255,255,255,.03); border-top:1px solid rgba(255,255,255,.07); color:var(--muted); font-size:.95rem; }
+    .quiz{ padding:clamp(18px,3vw,28px); display:grid; gap:18px; }
+    .q{ padding:16px; border:1px solid rgba(255,255,255,.08); border-radius:14px; background:rgba(0,0,0,.22); }
+    .q h3{ margin:0 0 10px 0; font-size:1.05rem; }
+    .opts{ display:grid; gap:8px; }
+    label{ display:flex; gap:10px; align-items:flex-start; padding:10px 12px; background:rgba(255,255,255,.03);
+            border:1px solid rgba(255,255,255,.06); border-radius:10px; cursor:pointer; }
+    input[type="radio"]{ transform: translateY(3px); }
+    .actions{ display:flex; flex-wrap:wrap; gap:10px; padding:8px 16px 18px; border-top:1px dashed rgba(255,255,255,.12); }
+    button{ border:1px solid rgba(255,255,255,.2); background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#04131a;
+            padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer; }
+    button.secondary{ background:transparent; color:var(--ink); border:1px solid rgba(255,255,255,.2); }
+    .score{ padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;
+             border-top:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.02); }
+    .badge{ display:inline-block; padding:4px 10px; border-radius:999px; font-weight:700; letter-spacing:.3px;
+            border:1px solid rgba(255,255,255,.12); }
+    .good{ color:#042615; background:linear-gradient(90deg,rgba(52,211,153,.25),rgba(34,197,94,.18)); border-color:rgba(52,211,153,.45); }
+    .bad{ color:#2b0c0c; background:linear-gradient(90deg,rgba(248,113,113,.25),rgba(239,68,68,.18)); border-color:rgba(248,113,113,.45); }
+    .explain{ margin-top:10px; font-size:.95rem; color:var(--muted); border-left:3px solid rgba(255,255,255,.2); padding-left:10px; }
+    footer{ text-align:center; color:var(--muted); font-size:.9rem; padding:30px 16px 40px; }
+    a{ color:var(--accent); }
+    .small{ font-size:.9rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Italianissimo — Weather Words & Pronunciation Quiz</h1>
+    <p class="sub">Watch the lesson below, then test your listening and grammar. <em>Ascolta prima, poi fai il quiz!</em></p>
+  </header>
+
+  <div class="wrap">
+    <section class="card">
+      <div class="media" role="group" aria-label="YouTube lesson video">
+        <iframe
+          src="https://www.youtube.com/embed/S07LqwkbgJc"
+          title="Italianissimo Lesson — Weather Vocabulary & Pronunciation"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <div class="note small">
+        Based on the Italianissimo YouTube lesson about weather words and pronunciation practice. Tip: watch once without pausing, then again with notes.
+      </div>
+
+      <form id="quizForm" class="quiz" novalidate></form>
+
+      <div class="actions">
+        <button type="button" id="checkBtn" aria-controls="quizForm">Check answers</button>
+        <button type="button" id="resetBtn" class="secondary">Reset</button>
+        <span id="message" class="small" aria-live="polite"></span>
+      </div>
+
+      <div class="score" id="scoreRow" hidden>
+        <strong>Score</strong>
+        <span id="scoreBadge" class="badge">0 / 0</span>
+      </div>
+    </section>
+
+    <footer>
+      Made with ♥ for <strong>Italianissimo</strong>. Want me to tailor questions to a specific timecode or phrase? Tell me the timestamps!
+    </footer>
+  </div>
+
+<script>
+const QUIZ = [
+  { id:"q1",
+    prompt:"Listening — In Italian small talk, which question means “How’s the weather?”",
+    prompt_it:"Ascolto — Nella conversazione, quale domanda significa “How’s the weather?”",
+    options:["Che tempo fai?","Com’è il tempo?","Dov’è il tempo?","Quando è il tempo?"],
+    answer:1,
+    explain:"The natural question is “Com’è il tempo?” literally “How is the weather?”."
+  },
+  { id:"q2",
+    prompt:"Vocabulary — Choose the best translation for “It’s sunny.”",
+    prompt_it:"Lessico — Scegli la traduzione migliore per “It’s sunny.”",
+    options:["C’è il sole.","È nuvoloso.","Piove.","Tira vento."],
+    answer:0,
+    explain:"“C’è il sole.” = There is sun / It’s sunny. Others: nuvoloso=cloudy; Piove=It’s raining; Tira vento=It’s windy."
+  },
+  { id:"q3",
+    prompt:"Usage — Pick the idiomatic Italian weather expression for “It’s very cold.”",
+    prompt_it:"Uso — Scegli l’espressione idiomatica per “It’s very cold.”",
+    options:["È freddissimo.","Fa molto freddo.","Sto freddo.","Ho freddo molto."],
+    answer:1,
+    explain:"When talking about weather temperature, Italians often use “fa + aggettivo”: “Fa (molto) freddo.”"
+  },
+  { id:"q4",
+    prompt:"Pronunciation — Which word contains the sound like English “ny” in ‘canyon’ (the Italian “gn”)?",
+    prompt_it:"Pronuncia — Quale parola contiene il suono ‘gn’ (come “ny” in inglese)?",
+    options:["legna","vento","neve","sereno"],
+    answer:0,
+    explain:"“gn” in “legna” = /ˈleɲɲa/. Weather tie-in: notice similar Italian consonant clusters in related vocabulary."
+  },
+  { id:"q5",
+    prompt:"Vocabulary — Select the correct sentence for “It’s raining.”",
+    prompt_it:"Lessico — Seleziona la frase corretta per “It’s raining.”",
+    options:["Ha piove.","È piovoso.","Piove.","Sta pioggia."],
+    answer:2,
+    explain:"Use the verb form alone: “Piove.” (It rains / It’s raining). “È piovoso” = It’s rainy (adjectival, less common in speech)."
+  },
+  { id:"q6",
+    prompt:"Listening — The teacher models the structure with “fa” to describe weather. Which is correct?",
+    prompt_it:"Ascolto — L’insegnante usa la struttura con “fa” per descrivere il meteo. Qual è corretta?",
+    options:["Fa sole.","Fa caldo.","Fa nuvola.","Fa piove."],
+    answer:1,
+    explain:"Common patterns: “Fa caldo/freddo/fresco.” Not *Fa sole* (say “C’è il sole”). Not *Fa piove* (say “Piove”)."
+  },
+  { id:"q7",
+    prompt:"Usage — Choose the most natural way to ask for repetition in a lesson (formal).",
+    prompt_it:"Uso — Scegli il modo più naturale per chiedere di ripetere (formale).",
+    options:["Ripeta, per favore.","Ripeti, per favore.","Di nuovo, grazie.","Ancora una volta!"],
+    answer:0,
+    explain:"Formal imperative (Lei): “Ripeta, per favore.” “Ripeti” is informal (tu)."
+  },
+  { id:"q8",
+    prompt:"Vocabulary — Which option matches the meaning “It’s windy.”",
+    prompt_it:"Lessico — Quale opzione significa “It’s windy.”",
+    options:["È ventoso.","Tira vento.","C’è vento.","Tutte le precedenti."],
+    answer:3,
+    explain:"All are acceptable. Everyday speech often uses “C’è vento” or “Tira vento.”"
+  },
+  { id:"q9",
+    prompt:"Pronunciation — Pick the word where “gli” is pronounced as one sound /ʎ/ (like ‘million’ without the i).",
+    prompt_it:"Pronuncia — Scegli la parola in cui “gli” si pronuncia come un suono /ʎ/.",
+    options:["ghiaccio","famiglia","luglio","A e B"],
+    answer:3,
+    explain:"“famiglia” (/faˈmiʎʎa/) and “luglio” (/ˈluʎʎo/) have “gli = /ʎ/”. “ghiaccio” is /ˈɡjattʃo/ (no /ʎ/)."
+  },
+  { id:"q10",
+    prompt:"Vocabulary — Choose the best reply to: “Com’è il tempo oggi?”",
+    prompt_it:"Lessico — Scegli la risposta migliore a: “Com’è il tempo oggi?”",
+    options:["È sereno, ma tira vento.","Sono caldo.","Mi chiamo sole.","Ho nuvola."],
+    answer:0,
+    explain:"“È sereno, ma tira vento.” is a natural weather description."
+  }
+];
+
+const form = document.getElementById('quizForm');
+
+function renderQuiz(){
+  form.innerHTML = '';
+  QUIZ.forEach((q, idx) => {
+    const field = document.createElement('fieldset');
+    field.className = 'q';
+    field.setAttribute('aria-labelledby', `${q.id}-label`);
+
+    const title = document.createElement('h3');
+    title.id = `${q.id}-label`;
+    title.innerHTML = `<span class="badge" style="background: rgba(167,139,250,.18); border-color: rgba(167,139,250,.45); color:#160e2e;">Q${idx+1}</span> ${q.prompt} <span class="small" style="color:var(--muted); display:block;">${q.prompt_it}</span>`;
+    field.appendChild(title);
+
+    const optWrap = document.createElement('div');
+    optWrap.className = 'opts';
+
+    q.options.forEach((opt, i) => {
+      const id = `${q.id}_${i}`;
+      const label = document.createElement('label');
+      label.setAttribute('for', id);
+
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = q.id;
+      input.id = id;
+      input.value = i;
+      input.required = true;
+
+      const span = document.createElement('span');
+      span.textContent = opt;
+
+      label.appendChild(input);
+      label.appendChild(span);
+      optWrap.appendChild(label);
+    });
+
+    field.appendChild(optWrap);
+
+    const explain = document.createElement('div');
+    explain.className = 'explain';
+    explain.id = `${q.id}-explain`;
+    explain.hidden = true;
+    explain.textContent = q.explain;
+    field.appendChild(explain);
+
+    form.appendChild(field);
+  });
+}
+renderQuiz();
+
+const checkBtn = document.getElementById('checkBtn');
+const resetBtn = document.getElementById('resetBtn');
+const message = document.getElementById('message');
+const scoreRow = document.getElementById('scoreRow');
+const scoreBadge = document.getElementById('scoreBadge');
+
+checkBtn.addEventListener('click', () => {
+  const formData = new FormData(form);
+  let total = QUIZ.length, correct = 0, allAnswered = true;
+
+  QUIZ.forEach(q => { if (!formData.has(q.id)) allAnswered = false; });
+  if (!allAnswered) { message.textContent = "Please answer all questions. / Rispondi a tutte le domande."; return; }
+  else message.textContent = "";
+
+  QUIZ.forEach((q, qi) => {
+    const chosen = Number(formData.get(q.id));
+    const field = form.querySelectorAll('.q')[qi];
+    const labels = field.querySelectorAll('label');
+    const explain = field.querySelector('#'+q.id+'-explain');
+    explain.hidden = false;
+
+    labels.forEach(l => { l.style.borderColor='rgba(255,255,255,.06)'; l.style.background='rgba(255,255,255,.03)'; });
+    const chosenLabel = labels[chosen];
+    const correctLabel = labels[q.answer];
+
+    if (chosen === q.answer) {
+      correct++;
+      chosenLabel.style.background='linear-gradient(90deg, rgba(52,211,153,.22), rgba(34,197,94,.12))';
+      chosenLabel.style.borderColor='rgba(52,211,153,.55)';
+    } else {
+      chosenLabel.style.background='linear-gradient(90deg, rgba(248,113,113,.22), rgba(239,68,68,.12))';
+      chosenLabel.style.borderColor='rgba(248,113,113,.55)';
+      correctLabel.style.background='linear-gradient(90deg, rgba(52,211,153,.22), rgba(34,197,94,.12))';
+      correctLabel.style.borderColor='rgba(52,211,153,.55)';
+    }
+  });
+
+  scoreBadge.textContent = correct + " / " + total;
+  scoreRow.hidden = false;
+  scoreBadge.className = 'badge ' + (correct/total >= 0.6 ? 'good' : 'bad');
+  window.scrollTo({ top: scoreRow.offsetTop - 20, behavior: 'smooth' });
+});
+
+resetBtn.addEventListener('click', () => {
+  form.reset(); renderQuiz(); message.textContent = "Quiz reset. / Quiz azzerato."; scoreRow.hidden = true;
+});
+</script>
+</body>
+</html>
